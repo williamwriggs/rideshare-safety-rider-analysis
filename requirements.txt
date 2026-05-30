@@ -1,0 +1,8 @@
+pandas>=2.0
+matplotlib>=3.7
+plotly>=5.18
+streamlit>=1.30
+folium>=0.15
+streamlit-folium>=0.18
+textblob>=0.17
+requests>=2.31
