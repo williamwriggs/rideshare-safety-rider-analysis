@@ -1,26 +1,88 @@
 # Rideshare Safety Rider Analysis
 
-This repository contains a starter analysis workflow for comparing safety, trust, and rider-experience narratives across human-driven rideshare services and autonomous ridehail services, with an initial focus on Uber and Waymo in San Francisco.
+A research prototype exploring trust, safety, comfort, reliability, and rider experience in autonomous and human-driven mobility services.
 
-The current dataset is **simulated**. It is intended to demonstrate the workflow, visualizations, and research concept before live data collection or validated public-data ingestion. Do not treat the included CSV as observed rider sentiment or verified incident data.
+## Live Application
 
-## Project idea
+https://rideshare-safety.streamlit.app/
 
-The working research question is: how can publicly available rider narratives, incident reports, and geospatial indicators help identify differences in perceived safety, trust, and service-design needs between autonomous and human-driven mobility services?
+Status: active research prototype.
 
-The prototype supports scenario tagging, sentiment scoring, comparison of Waymo and Uber scenario mentions, a Streamlit dashboard for mapping and filtering records, and scraper templates that can be adapted to compliant data sources and APIs.
+## Project Overview
 
-## Repository structure
+Traditional evaluations of autonomous vehicles often focus on crashes, disengagements, and technical performance. This project explores a complementary dimension of mobility: rider experience.
+
+The repository provides a reproducible workflow for:
+
+- scenario classification;
+- sentiment analysis;
+- geospatial visualization;
+- trust and comfort assessment;
+- comparative mobility-service evaluation;
+- multi-source triangulation across simulated, public narrative, and rider research datasets.
+
+The current implementation focuses on autonomous and human-driven ridehail services, with Waymo, Uber, Cruise, Tesla robotaxi/supervised autonomy, and related public narratives used as demonstration cases.
+
+## Research Question
+
+How can rider narratives, sentiment indicators, and geospatial analysis help identify trust, comfort, perceived safety, reliability, and operational-design issues in autonomous mobility services?
+
+## Datasets
+
+### Dataset A — Simulated Scenario Dataset
+
+A synthetic demonstration dataset used to validate the workflow, dashboard, and analytical methods. This dataset should not be interpreted as observed rider behavior or verified incident evidence.
+
+Files:
+
+- `data/simulated_sentiment_scenario_data.csv`
+- `data/simulated_sentiment_scenario_data_xy.csv`
+
+### Dataset B — Public Narrative Dataset
+
+A curated dataset of public narratives and public incident descriptions with documented XY coordinates. Records are paraphrased summaries tied to source URLs rather than scraped verbatim text.
+
+File:
+
+- `data/public_narratives_xy.csv`
+
+### Dataset C — Research Rider Dataset
+
+A structure for anonymized rider research data from surveys, interviews, or intercepts. This dataset is intended to support reviewer response, triangulation, and future publication.
+
+Files:
+
+- `data/research_rider_dataset.csv`
+- `data/research_rider_dataset_template.csv`
+
+## Live Dashboard Features
+
+- Dataset selector
+- Interactive maps
+- Sentiment visualization
+- Scenario filtering
+- Comparative service analysis
+- Geospatial clustering
+- Multi-source trust and safety analysis
+
+## Repository Structure
 
 ```text
 .
 ├── data/
-│   └── simulated_sentiment_scenario_data.csv
+│   ├── simulated_sentiment_scenario_data.csv
+│   ├── simulated_sentiment_scenario_data_xy.csv
+│   ├── public_narratives_xy.csv
+│   ├── research_rider_dataset.csv
+│   └── research_rider_dataset_template.csv
 ├── docs/
-│   └── paper_concept.md
+│   ├── paper_concept.md
+│   ├── deployment.md
+│   └── data_dictionary.md
 ├── src/
 │   ├── analyze_scenarios.py
 │   ├── av_safety_dashboard.py
+│   ├── create_geocoded_dataset.py
 │   └── scrape_template.py
 ├── .gitignore
 ├── LICENSE
@@ -28,26 +90,23 @@ The prototype supports scenario tagging, sentiment scoring, comparison of Waymo 
 └── requirements.txt
 ```
 
-## Quick start
+## Quick Start
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python src/create_geocoded_dataset.py
 python src/analyze_scenarios.py
 streamlit run src/av_safety_dashboard.py
 ```
 
-## Data status
+## Working Paper
 
-The included CSV is synthetic and should be used for demonstration only. A publication-ready version of this project should replace or supplement the simulated data with documented, reproducible sources such as public safety reports, public CPUC or DMV records where applicable, app-store reviews where collection is allowed, survey or intercept data, compliant API-derived public posts, or manually coded incident narratives.
+**Mapping Trust and Safety in Urban Mobility from Data in the Wild: A Framework for Understanding Rider Experience in Autonomous and Human-Driven Mobility Services**
 
-## Research and ethics notes
+The paper examines how rider narratives and geospatial analysis can complement traditional AV safety metrics by identifying dimensions of trust, comfort, perceived safety, reliability, and service quality that are often overlooked in technical evaluations.
 
-Scraping should comply with source terms of service, platform API rules, privacy expectations, and institutional review requirements. Publicly visible text can still create human-subjects, privacy, and reputational risks when aggregated, geocoded, or combined with other data.
+## Research Ethics
 
-Recommended safeguards include avoiding handles, names, account IDs, and precise locations unless necessary; aggregating to neighborhoods, ZIP codes, census tracts, or hex bins; documenting collection dates, APIs, filters, and rate limits; distinguishing verified incidents from anecdotal claims; and reporting uncertainty and sampling bias clearly.
-
-## Working paper direction
-
-A potential paper can use this repository as a reproducible methods appendix for a study on “data in the wild,” perceived safety, and AV trust. The strongest contribution is likely not a claim that AVs are categorically safer or less safe based on scraped sentiment, but rather a framework for identifying where rider experience, safety communication, and service design diverge across automated and human-driven mobility.
+Any future collection of public narratives should comply with platform terms of service, privacy expectations, institutional review requirements, and applicable data-governance standards. Publicly available text can still create human-subjects, privacy, and reputational risks when aggregated, geocoded, or combined with other data.

@@ -11,6 +11,7 @@ from streamlit_folium import folium_static
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_DATA_PATH = REPO_ROOT / "data" / "simulated_sentiment_scenario_data.csv"
 XY_DATA_PATH = REPO_ROOT / "data" / "simulated_sentiment_scenario_data_xy.csv"
+ADDITIONAL_XY_DATA_PATH = REPO_ROOT / "data" / "additional_narratives_xy.csv"
 
 LOCATION_COORDINATES = {
     "Tenderloin": (37.7842, -122.4142),
@@ -21,42 +22,80 @@ LOCATION_COORDINATES = {
     "Castro": (37.7609, -122.4350),
 }
 
+DATASET_OPTIONS = {
+    "Simulated demo data": {
+        "preferred_path": XY_DATA_PATH,
+        "fallback_path": RAW_DATA_PATH,
+        "note": "Synthetic demonstration data for testing the workflow. Not observed rider evidence.",
+    },
+    "Additional narratives with XY": {
+        "preferred_path": ADDITIONAL_XY_DATA_PATH,
+        "fallback_path": None,
+        "note": "Curated additional narratives with actual or documented XY coordinates, when available.",
+    },
+}
+
+REQUIRED_COLUMNS = {"Service", "Scenario", "Location", "Sentiment", "Latitude", "Longitude"}
+
+
+def geocode_known_locations(df: pd.DataFrame) -> pd.DataFrame:
+    """Add approximate coordinates for known SF neighborhoods when lat/lon are missing."""
+    records = df.copy()
+    if "Latitude" not in records.columns or "Longitude" not in records.columns:
+        records["Latitude"] = records["Location"].map(lambda x: LOCATION_COORDINATES.get(str(x), (None, None))[0])
+        records["Longitude"] = records["Location"].map(lambda x: LOCATION_COORDINATES.get(str(x), (None, None))[1])
+    return records.dropna(subset=["Latitude", "Longitude"])
+
 
 @st.cache_data
-def load_data() -> pd.DataFrame:
-    """Load XY data when available; otherwise load raw data and geocode known locations."""
-    path = XY_DATA_PATH if XY_DATA_PATH.exists() else RAW_DATA_PATH
-    if not path.exists():
-        st.error("Could not find data/simulated_sentiment_scenario_data.csv")
-        st.stop()
+def load_dataset(dataset_label: str) -> tuple[pd.DataFrame, Path, str]:
+    """Load the selected dataset and return data, source path, and dataset note."""
+    config = DATASET_OPTIONS[dataset_label]
+    preferred_path = config["preferred_path"]
+    fallback_path = config["fallback_path"]
+
+    if preferred_path.exists():
+        path = preferred_path
+    elif fallback_path is not None and fallback_path.exists():
+        path = fallback_path
+    else:
+        raise FileNotFoundError(str(preferred_path))
 
     df = pd.read_csv(path)
     df.columns = [col.strip() for col in df.columns]
-
-    if "Latitude" not in df.columns or "Longitude" not in df.columns:
-        df["Latitude"] = df["Location"].map(lambda x: LOCATION_COORDINATES.get(str(x), (None, None))[0])
-        df["Longitude"] = df["Location"].map(lambda x: LOCATION_COORDINATES.get(str(x), (None, None))[1])
-
-    df = df.dropna(subset=["Latitude", "Longitude"])
-    return df
+    df = geocode_known_locations(df)
+    return df, path, config["note"]
 
 
 st.set_page_config(page_title="Rideshare Safety Rider Analysis", layout="wide")
 
 st.title("Rideshare Safety Rider Analysis")
 st.caption(
-    "Prototype dashboard for exploring simulated rider safety, trust, and comfort scenarios "
+    "Prototype dashboard for exploring rider safety, trust, and comfort scenarios "
     "across autonomous and human-driven ridehail services."
 )
 
-with st.expander("Important data note", expanded=True):
-    st.write(
-        "This dashboard currently uses simulated demonstration data. It supports workflow testing "
-        "for scenario tagging, sentiment comparison, and geospatial visualization. It should not "
-        "be interpreted as observed rider behavior or verified incident evidence."
-    )
+with st.sidebar:
+    st.header("Dataset")
+    selected_dataset = st.selectbox("Choose dataset", list(DATASET_OPTIONS.keys()))
 
-df = load_data()
+try:
+    df, source_path, dataset_note = load_dataset(selected_dataset)
+except FileNotFoundError:
+    st.warning(
+        "The selected dataset is not available yet. Add `data/additional_narratives_xy.csv` "
+        "using the schema in `docs/data_dictionary.md`, then redeploy or refresh the app."
+    )
+    st.stop()
+
+missing_columns = REQUIRED_COLUMNS - set(df.columns)
+if missing_columns:
+    st.error(f"The selected dataset is missing required columns: {sorted(missing_columns)}")
+    st.stop()
+
+with st.expander("Important data note", expanded=True):
+    st.write(dataset_note)
+    st.write(f"Loaded dataset: `{source_path.relative_to(REPO_ROOT)}`")
 
 with st.sidebar:
     st.header("Filters")
