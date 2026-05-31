@@ -84,6 +84,14 @@ def top_count_chart(data: pd.DataFrame, column: str, title: str, color: str | No
     st.plotly_chart(fig, use_container_width=True)
 
 
+def count_table(data: pd.DataFrame, column: str, label: str) -> pd.DataFrame:
+    if column not in data.columns or data.empty:
+        return pd.DataFrame(columns=[label, "Count", "Percent"])
+    table = data[column].fillna("Missing").value_counts().rename_axis(label).reset_index(name="Count")
+    table["Percent"] = (table["Count"] / table["Count"].sum() * 100).round(1)
+    return table
+
+
 def mean_value_chart(data: pd.DataFrame):
     value_cols = [
         "Zero_Emission_Score",
@@ -192,6 +200,28 @@ with chart_cols[1]:
     top_count_chart(filtered_df, "Sentiment", "Sentiment distribution", "Respondent_Group" if "Respondent_Group" in filtered_df.columns else "Service")
 
 if selected_dataset == "Research Rider Dataset":
+    rider_only_df = filtered_df[filtered_df["Respondent_Group"] == "Rider"]
+    st.subheader("Rider-only breakdown")
+    st.caption("This section isolates only respondents who completed a Cruise research ride and uses their dropoff-location coordinates.")
+
+    if rider_only_df.empty:
+        st.info("No rider records match the current filters.")
+    else:
+        rider_metrics = st.columns(3)
+        rider_metrics[0].metric("Rider records", len(rider_only_df))
+        rider_metrics[1].metric("Rider scenarios", rider_only_df["Scenario"].nunique())
+        rider_metrics[2].metric("Avg rider sentiment", f"{rider_only_df['Sentiment Score'].mean():.2f}" if "Sentiment Score" in rider_only_df.columns else "N/A")
+
+        rider_table_cols = st.columns(2)
+        with rider_table_cols[0]:
+            st.markdown("**Rider scenario mentions**")
+            st.dataframe(count_table(rider_only_df, "Scenario", "Scenario"), use_container_width=True, hide_index=True)
+            top_count_chart(rider_only_df, "Scenario", "Rider-only scenario mentions")
+        with rider_table_cols[1]:
+            st.markdown("**Rider sentiment distribution**")
+            st.dataframe(count_table(rider_only_df, "Sentiment", "Sentiment"), use_container_width=True, hide_index=True)
+            top_count_chart(rider_only_df, "Sentiment", "Rider-only sentiment distribution")
+
     st.subheader("Research rider survey views")
     survey_cols = st.columns(2)
     with survey_cols[0]:
