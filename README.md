@@ -73,19 +73,20 @@ The direct and indirect references reported in the paper are subsets of the 37 c
 
 ```text
 .
+├── .devcontainer/
+│   └── devcontainer.json
 ├── data/
 │   ├── simulated_sentiment_scenario_data.csv
 │   ├── simulated_sentiment_scenario_data_xy.csv
 │   ├── public_narratives_xy.csv
-│   ├── research_rider_dataset.csv
-│   └── research_rider_dataset_template.csv
+│   └── research_rider_dataset.csv
 ├── docs/
-│   ├── paper_concept.md
-│   ├── deployment.md
-│   └── data_dictionary.md
+│   └── paper_outline.md
 ├── src/
 │   ├── analyze_scenarios.py
+│   ├── app.py
 │   ├── av_safety_dashboard.py
+│   ├── build_research_rider_dataset.py
 │   ├── create_geocoded_dataset.py
 │   └── scrape_template.py
 ├── .gitignore
