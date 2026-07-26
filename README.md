@@ -55,6 +55,10 @@ Files:
 - `data/research_rider_dataset.csv`
 - `data/research_rider_dataset_template.csv`
 
+### Qualitative Coding Note
+
+The direct and indirect references reported in the paper are subsets of the 37 coded thematic references. This relationship is not capturable in the public database because its scenario classifications are mutually exclusive record-level categories developed for dashboard visualization and are analytically distinct from the multi-label qualitative coding reported in the paper.
+
 ## Live Dashboard Features
 
 - Dataset selector
